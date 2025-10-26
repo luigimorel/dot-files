@@ -3,14 +3,23 @@ return {
     "stevearc/conform.nvim",
     event = "BufWritePre", -- uncomment for format on save
     opts = require "configs.conform",
-  },                       -- These are some examples, uncomment them if you want to see them work!
+  },
+  {
+    "github/copilot.vim",
+    event = "InsertEnter",
+    config = function()
+      vim.g.copilot_no_tab_map = true
+      vim.g.assume_mapped = true
+    end,
+  },
+  -- These are some examples, uncomment them if you want to see them work!
   {
     "neovim/nvim-lspconfig",
 
     config = function()
       require "configs.lspconfig"
 
-      -- === Go to definition keymaps ===
+      -- === Go to denifinition keymaps ===
       vim.keymap.set("n", "gd", vim.lsp.buf.definition, { desc = "Go to definition" })
       vim.keymap.set('n', '<leader>fu', ':lua require("telescope.builtin").lsp_references()<CR>',
         { noremap = true, silent = true })
@@ -19,7 +28,6 @@ return {
       vim.keymap.set(
         "n", "K", vim.lsp.buf.hover, {}
       )
-      vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, {})
       vim.keymap.set(
         "n",
         "<C-LeftMouse>",
@@ -47,9 +55,9 @@ return {
       })
     end,
   }, -- test new blink
-  {
-    import = "nvchad.blink.lazyspec",
-  },
+  -- {
+  --   import = "nvchad.blink.lazyspec",
+  -- },
   {
     "nvim-treesitter/nvim-treesitter",
     "williamboman/mason.nvim",

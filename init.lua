@@ -5,6 +5,13 @@ vim.g.mapleader = " "
 -- Keymap to open Telescope file finder with <space>e
 vim.keymap.set("n", "<leader>e", "<cmd>Telescope find_files<cr>", { desc = "Find files" })
 
+vim.keymap.set("i", "<C-a>", 'copilot#Accept("")', {
+  expr = true,
+  silent = true,
+  replace_keycodes = false,
+  noremap = true,
+})
+
 -- bootstrap lazy and all plugins
 local lazypath = vim.fn.stdpath "data" .. "/lazy/lazy.nvim"
 

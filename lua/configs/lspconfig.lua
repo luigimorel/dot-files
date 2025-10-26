@@ -13,6 +13,7 @@ local servers = {
   "pyright",
   "dockerls",
   "svelte",
+  "copilot"
 }
 vim.lsp.enable(servers)
 -- read :h vim.lsp.config for changing options of lsp servers

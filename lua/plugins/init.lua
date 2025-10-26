@@ -17,6 +17,10 @@ return {
       vim.keymap.set("n", "gr", vim.lsp.buf.references, { desc = "Find references" })
       vim.keymap.set("n", "gs", "<cmd>vsp | lua vim.lsp.buf.definition()<CR>", { desc = "Go to definition (split)" })
       vim.keymap.set(
+        "n", "K", vim.lsp.buf.hover, {}
+      )
+      vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, {})
+      vim.keymap.set(
         "n",
         "<C-LeftMouse>",
         vim.lsp.buf.definition,
@@ -50,6 +54,7 @@ return {
     "nvim-treesitter/nvim-treesitter",
     "williamboman/mason.nvim",
     opts = {
+      auto_install = true,
       ensure_installed = {
         "gopls",
         "golangci-lint",

@@ -48,14 +48,93 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 })
 
 -- Git blame always enabled for git commit messages
-vim.api.nvim_create_autocmd("FileType", {
-
-  pattern = "gitcommit",
+-- Show git blame info for the current line (no plugins)
+vim.api.nvim_create_autocmd("CursorHold", {
+  pattern = "*",
   callback = function()
-    vim.b.gitsigns_blame_enabled = 1
+    local file = vim.fn.expand("%:p")
+    if vim.fn.filereadable(file) == 0 then return end
+
+    local line = vim.fn.line(".")
+    local cmd = string.format("git blame -L %d,%d --porcelain -- %s | head -n 1", line, line, vim.fn.shellescape(file))
+    local blame = vim.fn.system(cmd)
+
+    if vim.v.shell_error ~= 0 or blame == "" then
+      vim.api.nvim_echo({ { "Not committed yet", "Comment" } }, false, {})
+      return
+    end
+
+    local commit = blame:match("^(%S+)")
+    local info = vim.fn.system(string.format("git show -s --format='%%an, %%ar, %%s' %s", commit))
+    info = info:gsub("\n", "")
+    vim.api.nvim_echo({ { info, "Comment" } }, false, {})
   end,
 })
 
+-- Inline git blame for the current line (no plugins)
+local ns_id = vim.api.nvim_create_namespace("inline_git_blame")
+
+local function show_blame()
+  vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
+  local file = vim.fn.expand("%:p")
+  if vim.fn.filereadable(file) == 0 then return end
+
+  local line = vim.fn.line(".")
+  local cmd = string.format("git blame -L %d,%d --porcelain -- %s | head -n 1", line, line, vim.fn.shellescape(file))
+  local blame = vim.fn.system(cmd)
+
+  -- If not committed yet (untracked or staged file)
+  if vim.v.shell_error ~= 0 or blame == "" then
+    vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
+      virt_text = { { "  Uncommitted", "WarningMsg" } },
+      virt_text_pos = "eol",
+    })
+    return
+  end
+
+  local commit = blame:match("^(%S+)")
+  if not commit or commit == "0000000000000000000000000000000000000000" then
+    vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
+      virt_text = { { "  Uncommitted", "WarningMsg" } },
+      virt_text_pos = "eol",
+    })
+    return
+  end
+
+  -- Get commit details
+  local info = vim.fn.system(string.format("git show -s --format='%%an • %%ar • %%s' %s", commit))
+  info = info:gsub("\n", "")
+  if info == "" then
+    vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
+      virt_text = { { "  Uncommitted", "WarningMsg" } },
+      virt_text_pos = "eol",
+    })
+    return
+  end
+
+  -- Show inline blame
+  vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
+    virt_text = { { "  " .. info, "Comment" } },
+    virt_text_pos = "eol",
+  })
+end
+
+-- Auto-update blame when cursor stops
+vim.api.nvim_create_autocmd({ "CursorHold", "BufEnter" }, {
+  pattern = "*",
+  callback = show_blame,
+})
+
+-- Clear when moving cursor
+vim.api.nvim_create_autocmd("CursorMoved", {
+  pattern = "*",
+  callback = function()
+    vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
+  end,
+})
+
+-- Optional: reduce CursorHold delay
+vim.o.updatetime = 800
 
 
 -- Syntax highlighting for .env files
@@ -70,10 +149,10 @@ vim.api.nvim_create_autocmd("BufRead", {
 
 -- Highlight yanked text
 vim.api.nvim_create_autocmd("TextYankPost", {
-  group       = vim.api.nvim_create_augroup("highlight_yank", { clear = true }),
-  pattern     = "*",
-  description = "Highlight yanked text",
-  callback    = function()
+  group    = vim.api.nvim_create_augroup("highlight_yank", { clear = true }),
+  pattern  = "*",
+  desc     = "Highlight yanked text",
+  callback = function()
     vim.highlight.on_yank { timeout = 200, visual = true, higroup = "IncSearch" }
   end
 })

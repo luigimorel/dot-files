@@ -34,7 +34,6 @@ return {
         vim.lsp.buf.definition,
         { buffer = true, desc = "Ctrl-click to go to definition" }
       )
-
       -- === Make gf work for "@/components" imports ===
       vim.opt.path:append "src"
       vim.opt.suffixesadd:append ".js,.jsx,.ts,.tsx"
@@ -86,7 +85,7 @@ return {
     "nvim-telescope/telescope.nvim",
     opts = {
       defaults = {
-        file_ignore_patterns = { "node_modules", ".git", "dist", "build", "public" },
+        file_ignore_patterns = { "node_modules", ".git", "dist", "build" },
       },
     },
     config = function(_, opts)

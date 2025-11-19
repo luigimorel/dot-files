@@ -7,7 +7,7 @@ local options = {
     typescript = { "prettier" },
     typescriptreact = { "prettier" },
     json = { "prettier" },
-    go = { "gofumpt", "goimports", "golines", "gofmt" },
+    go = { "gofumpt", "goimports" },
   },
   linters_by_ft = {
     go = { "golangci-lint" },

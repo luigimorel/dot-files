@@ -93,14 +93,14 @@ local function show_blame()
   end
 
   local commit = blame:match("^(%S+)")
-  if not commit or commit == "0000000000000000000000000000000000000000" then
-    vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
-      virt_text = { { "  Uncommitted", "WarningMsg" } },
-      virt_text_pos = "eol",
-    })
-    return
-  end
-
+  -- if not commit or commit == "0000000000000000000000000000000000000000" then
+  --   vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
+  --     virt_text = { { "  Uncommitted", "WarningMsg" } },
+  --     virt_text_pos = "eol",
+  --   })
+  --   return
+  -- end
+  --
   -- Get commit details
   local info = vim.fn.system(string.format("git show -s --format='%%an • %%ar • %%s' %s", commit))
   info = info:gsub("\n", "")

@@ -53,7 +53,33 @@ return {
         end,
       })
     end,
-  }, -- test new blink
+  },
+
+  -- waktime
+  {
+    'wakatime/vim-wakatime', lazy = false
+  },
+  --enable scrollbar
+  {
+    "petertriho/nvim-scrollbar",
+    lazy = false,
+    config = function()
+      require("configs.scrollbar")
+    end
+
+  },
+
+  -- optional: show search matches in the scrollbar
+  {
+    "kevinhwang91/nvim-hlslens",
+    config = function()
+      require("hlslens").setup({})
+      -- scrollbar search handler will be set up later (see setup)
+    end,
+  },
+
+
+  -- test new blink
   -- {
   --   import = "nvchad.blink.lazyspec",
   -- },
@@ -82,8 +108,8 @@ return {
     },
   },
 
-  -- Tree sitter config 
-   {
+  -- Tree sitter config
+  {
     "nvim-tree/nvim-tree.lua",
     opts = {
       diagnostics = {

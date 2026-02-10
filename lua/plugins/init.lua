@@ -108,7 +108,42 @@ return {
     },
   },
 
-  -- Tree sitter config
+  -- Auto close HTML tags
+  {
+    "windwp/nvim-ts-autotag",
+    -- Only load the plugin for these filetypes
+    ft = { "html", "javascriptreact", "typescriptreact" },
+    config = function()
+      require("nvim-ts-autotag").setup({})
+    end,
+  },
+
+  -- Emmmet
+  {
+    'mattn/emmet-vim',
+    -- Emmet is a classic Vim plugin, so it's not configured with a Lua 'config'
+    -- function but rather with Vimscript global variables (vim.g in Lua).
+    init = function()
+      -- Enable Emmet for JSX/TSX (React files)
+      vim.g.user_emmet_settings = {
+        jsx = {
+          extends = 'html',
+        },
+        javascriptreact = {
+          extends = 'jsx',
+        },
+        typescriptreact = {
+          extends = 'jsx',
+        },
+      }
+
+      -- Optional: Remap the default trigger key if you don't like <C-y>,
+      -- This example changes the leader key from <C-y> to a single comma ,
+      -- The full command then becomes ,, (Comma, Comma)
+      -- vim.g.user_emmet_leader_key = ','
+    end
+  },
+  --Tree sitter config
   {
     "nvim-tree/nvim-tree.lua",
     opts = {

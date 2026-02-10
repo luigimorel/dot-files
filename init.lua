@@ -31,6 +31,21 @@ vim.api.nvim_create_autocmd("VimEnter", {
     end
   end,
 })
+
+--Handle closing tags in TS/JSX files
+vim.lsp.handlers['textDocument/publishDiagnostics'] = vim.lsp.with(
+  vim.lsp.diagnostic.on_publish_diagnostics,
+  {
+    underline = true,
+    virtual_text = {
+      spacing = 5,
+      severity_limit = 'Warning',
+    },
+    update_in_insert = true,
+  }
+)
+
+
 -- Restore cursor position when reopening files
 vim.api.nvim_create_autocmd("BufReadPost", {
   callback = function()
@@ -64,7 +79,8 @@ vim.api.nvim_create_autocmd("CursorHold", {
       return
     end
 
-    local commit = blame:match("^(%S+)")
+    local commit = blame:match("^([0-9a-fA-F]+)")
+
     local info = vim.fn.system(string.format("git show -s --format='%%an, %%ar, %%s' %s", commit))
     info = info:gsub("\n", "")
     vim.api.nvim_echo({ { info, "Comment" } }, false, {})
@@ -92,7 +108,8 @@ local function show_blame()
     return
   end
 
-  local commit = blame:match("^(%S+)")
+  local commit = blame:match("^([0-9a-fA-F]+)")
+
   -- if not commit or commit == "0000000000000000000000000000000000000000" then
   --   vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
   --     virt_text = { { "  Uncommitted", "WarningMsg" } },

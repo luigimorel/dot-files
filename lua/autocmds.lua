@@ -11,42 +11,71 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 vim.api.nvim_create_autocmd("BufWritePre", {
   desc = "Organize imports and fix all in TypeScript (vtsls)",
   group = vim.api.nvim_create_augroup("vtsls_organize_imports", { clear = true }),
-  pattern = { "*.ts", "*.tsx" },
+  pattern = { "*.ts", "*.tsx", "*.js", "*.jsx" },
   callback = function()
     local bufnr = vim.api.nvim_get_current_buf()
 
-    -- organize imports
-    local params = {
-      textDocument = vim.lsp.util.make_text_document_params(bufnr),
-      context = { only = { "source.organizeImports" } },
-    }
-    local result = vim.lsp.buf_request_sync(bufnr, "textDocument/codeAction", params, 1000)
-    if result then
-      for _, res in pairs(result) do
-        for _, action in pairs(res.result or {}) do
-          if action.edit then
-            vim.lsp.util.apply_workspace_edit(action.edit, "utf-8")
-          elseif action.command then
-            vim.lsp.buf.execute(action)
-          end
-        end
-      end
+    local function run_code_action(kind)
+      vim.lsp.buf.code_action({
+        apply = true,
+        context = {
+          only = { kind },
+          diagnostics = {},
+        },
+      })
     end
 
+    -- Order matters
+    run_code_action("source.removeUnusedImports")
+    run_code_action("source.organizeImports")
+    run_code_action("source.fixAll")
+
+    -- organize imports
+    -- local params = {
+    --   textDocument = vim.lsp.util.make_text_document_params(bufnr),
+    --   context = { only = { "source.removeUnusedImports" } },
+    -- }
+    -- local result = vim.lsp.buf_request_sync(bufnr, "textDocument/codeAction", params, 1000)
+    -- if result then
+    --   for _, res in pairs(result) do
+    --     for _, action in pairs(res.result or {}) do
+    --       if action.edit then
+    --         vim.lsp.util.apply_workspace_edit(action.edit, "utf-8")
+    --       elseif action.command then
+    --         vim.lsp.buf.execute(action.command)
+    --       end
+    --     end
+    --   end
+    -- end
+    -- --
+    -- params.context = { only = { "source.organizeImports" } }
+    -- result = vim.lsp.buf_request_sync(bufnr, "textDocument/codeAction", params, 1000)
+    -- if result then
+    --   for _, res in pairs(result) do
+    --     for _, action in pairs(res.result or {}) do
+    --       if action.edit then
+    --         vim.lsp.util.apply_workspace_edit(action.edit, "utf-8")
+    --       elseif action.command then
+    --         vim.lsp.buf.execute(action.command)
+    --       end
+    --     end
+    --   end
+    -- end
+
     -- fix all
-    params.context = { only = { "source.fixAll" } }
-    result = vim.lsp.buf_request_sync(bufnr, "textDocument/codeAction", params, 1000)
-    if result then
-      for _, res in pairs(result) do
-        for _, action in pairs(res.result or {}) do
-          if action.edit then
-            vim.lsp.util.apply_workspace_edit(action.edit, "utf-8")
-          elseif action.command then
-            vim.lsp.buf.execute(action)
-          end
-        end
-      end
-    end
+    -- params.context = { only = { "source.fixAll" } }
+    -- result = vim.lsp.buf_request_sync(bufnr, "textDocument/codeAction", params, 1000)
+    -- if result then
+    --   for _, res in pairs(result) do
+    --     for _, action in pairs(res.result or {}) do
+    --       if action.edit then
+    --         vim.lsp.util.apply_workspace_edit(action.edit, "utf-8")
+    --       elseif action.command then
+    --         vim.lsp.buf.execute(action.command)
+    --       end
+    --     end
+    --   end
+    -- end
   end,
 })
 
@@ -79,7 +108,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
     local client = vim.lsp.get_client_by_id(event.data.client_id)
     if
-      client and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf)
+        client and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf)
     then
       local highlight_augroup = vim.api.nvim_create_augroup("lsp-highlight", { clear = false })
 

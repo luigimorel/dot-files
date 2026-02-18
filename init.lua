@@ -1,5 +1,7 @@
 vim.g.base46_cache = vim.fn.stdpath "data" .. "/base46/"
 vim.g.mapleader = " "
+vim.o.shell = "/bin/bash"
+vim.o.shellcmdflag = "-c"
 
 -- Custom keybindings
 -- Keymap to open Telescope file finder with <space>e
@@ -24,27 +26,31 @@ vim.opt.rtp:prepend(lazypath)
 
 --  Open current file directory in nvim-tree
 vim.api.nvim_create_autocmd("VimEnter", {
-  callback = function(data)
-    -- Only open NvimTree if starting with a directory
-    if vim.fn.isdirectory(vim.fn.argv(0)) == 1 then
+  callback = function()
+    local args = vim.fn.argv()
+    local arg = args[1] -- FIRST CLI argument
+
+    if not arg or arg == "" then
+      return
+    end
+
+    if vim.fn.isdirectory(arg) == 1 then
       require("nvim-tree.api").tree.open()
     end
   end,
 })
 
---Handle closing tags in TS/JSX files
-vim.lsp.handlers['textDocument/publishDiagnostics'] = vim.lsp.with(
-  vim.lsp.diagnostic.on_publish_diagnostics,
-  {
-    underline = true,
-    virtual_text = {
-      spacing = 5,
-      severity_limit = 'Warning',
-    },
-    update_in_insert = true,
-  }
-)
 
+
+--Handle closing tags in TS/JSX files
+vim.diagnostic.config({
+  underline = true,
+  virtual_text = {
+    spacing = 5,
+    severity = { min = vim.diagnostic.severity.WARN },
+  },
+  update_in_insert = true,
+})
 
 -- Restore cursor position when reopening files
 vim.api.nvim_create_autocmd("BufReadPost", {
@@ -80,6 +86,20 @@ vim.api.nvim_create_autocmd("CursorHold", {
     end
 
     local commit = blame:match("^([0-9a-fA-F]+)")
+    if blame:match("^fatal:") then
+      return
+    end
+
+    local ns_id = vim.api.nvim_create_namespace("inline_git_blame")
+
+
+    if not commit or commit == "0000000000000000000000000000000000000000" then
+      vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
+        virt_text = { { "  Uncommitted", "WarningMsg" } },
+        virt_text_pos = "eol",
+      })
+      return
+    end
 
     local info = vim.fn.system(string.format("git show -s --format='%%an, %%ar, %%s' %s", commit))
     info = info:gsub("\n", "")
@@ -109,15 +129,19 @@ local function show_blame()
   end
 
   local commit = blame:match("^([0-9a-fA-F]+)")
+  if blame:match("^fatal:") then
+    return
+  end
 
-  -- if not commit or commit == "0000000000000000000000000000000000000000" then
-  --   vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
-  --     virt_text = { { "  Uncommitted", "WarningMsg" } },
-  --     virt_text_pos = "eol",
-  --   })
-  --   return
-  -- end
-  --
+
+  if not commit or commit == "0000000000000000000000000000000000000000" then
+    vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
+      virt_text = { { "  Uncommitted", "WarningMsg" } },
+      virt_text_pos = "eol",
+    })
+    return
+  end
+
   -- Get commit details
   local info = vim.fn.system(string.format("git show -s --format='%%an • %%ar • %%s' %s", commit))
   info = info:gsub("\n", "")
@@ -175,6 +199,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 })
 
 vim.opt.textwidth = 120
+
 
 local lazy_config = require "configs.lazy"
 

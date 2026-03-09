@@ -1,0 +1,1 @@
+/home/morel/.config/fish/config.fish

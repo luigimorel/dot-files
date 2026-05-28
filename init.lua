@@ -1,6 +1,6 @@
 vim.g.base46_cache = vim.fn.stdpath "data" .. "/base46/"
 vim.g.mapleader = " "
-vim.o.shell = "/bin/bash"
+vim.o.shell = "/usr/bin/fish"
 vim.o.shellcmdflag = "-c"
 
 -- Custom keybindings
@@ -39,7 +39,6 @@ vim.api.nvim_create_autocmd("VimEnter", {
     end
   end,
 })
-
 
 
 --Handle closing tags in TS/JSX files

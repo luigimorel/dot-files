@@ -15,22 +15,44 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   callback = function()
     local bufnr = vim.api.nvim_get_current_buf()
 
-    local function run_code_action(kind)
-      vim.lsp.buf.code_action({
-        apply = true,
-        context = {
-          only = { kind },
-          diagnostics = {},
-        },
-      })
-    end
+    local actions = {
+      "source.addMissingImports",
+      "source.removeUnusedImports",
+      "source.organizeImports",
+    }
 
-    -- Order matters
-    run_code_action("source.removeUnusedImports")
-    run_code_action("source.organizeImports")
-    run_code_action("source.fixAll")
+
+
+    local function run_next(index)
+      if index > #actions then return end
+
+      local params = vim.lsp.util.make_range_params(0, "utf-8")
+      ; (params --[[@as any]]).context = { only = { actions[index] }, diagnostics = {} }
+
+      local results = vim.lsp.buf_request_sync(bufnr, "textDocument/codeAction", params, 3000)
+      if results then
+        for _, res in pairs(results) do
+          local result = res.result
+          if result and not vim.tbl_isempty(result) then
+            local action = result[1]
+            if action.edit then
+              vim.lsp.util.apply_workspace_edit(action.edit, "utf-8")
+            end
+            if action.command then
+              local cmd = type(action.command) == "table" and action.command or action
+              vim.lsp.buf.execute_command(cmd)
+            end
+            break
+          end
+        end
+      end
+
+      run_next(index + 1)
+    end
+    run_next(1)
   end,
 })
+
 
 vim.api.nvim_create_autocmd("LspAttach", {
   group = vim.api.nvim_create_augroup("lsp-attach", { clear = true }),

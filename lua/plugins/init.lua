@@ -13,6 +13,15 @@ return {
     end,
   },
   -- These are some examples, uncomment them if you want to see them work!
+  --
+
+  -- Tag matching for HTML
+  {
+    "windwp/nvim-ts-autotag",
+    config = function()
+      require("nvim-ts-autotag").setup()
+    end,
+  },
   {
     "neovim/nvim-lspconfig",
 
@@ -79,6 +88,25 @@ return {
   },
 
 
+  {
+    "akinsho/flutter-tools.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "stevearc/dressing.nvim", -- optional UI improvement
+    },
+    config = function()
+      require("flutter-tools").setup {
+        lsp = {
+          on_attach = function(client, bufnr)
+            -- NvChad default on_attach
+            require("nvchad.configs.lspconfig").on_attach(client, bufnr)
+          end,
+          capabilities = require("nvchad.configs.lspconfig").capabilities,
+        },
+      }
+    end,
+  },
+
   -- test new blink
   -- {
   --   import = "nvchad.blink.lazyspec",
@@ -129,18 +157,8 @@ return {
         jsx = {
           extends = 'html',
         },
-        javascriptreact = {
-          extends = 'jsx',
-        },
-        typescriptreact = {
-          extends = 'jsx',
-        },
-      }
 
-      -- Optional: Remap the default trigger key if you don't like <C-y>,
-      -- This example changes the leader key from <C-y> to a single comma ,
-      -- The full command then becomes ,, (Comma, Comma)
-      -- vim.g.user_emmet_leader_key = ','
+      }
     end
   },
   --Tree sitter config
@@ -159,6 +177,16 @@ return {
           error = "",
         },
       },
+    },
+  },
+  { 'dart-lang/dart-vim-plugin',
+
+  },
+  {
+    'akinsho/flutter-tools.nvim',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'stevearc/dressing.nvim',
     },
   },
   {

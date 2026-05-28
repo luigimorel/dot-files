@@ -1,9 +1,8 @@
--- lua/configs/lualine.lua
 local M = {}
 
 M.statusline = {
   options = {
-    theme = "auto", -- or specify a theme like "gruvbox", "tokyonight", etc.
+    theme = "auto",
     component_separators = { left = '', right = '' },
     section_separators = { left = '', right = '' },
   },
@@ -11,9 +10,12 @@ M.statusline = {
     lualine_a = { 'mode' },
     lualine_b = { 'branch', 'diff', 'diagnostics' },
     lualine_c = {
-      { "filename", path = 1 }, -- relative path
+      {
+        "filename",
+        path = 1, -- relative path
+      },
     },
-    lualine_x = { 'encoding', 'fileformat', 'filetype' },
+    lualine_x = { 'fileformat', 'filetype' },
     lualine_y = { 'progress' },
     lualine_z = {
       function()

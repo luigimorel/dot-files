@@ -9,15 +9,17 @@ M.statusline = {
   sections = {
     lualine_a = { 'mode' },
     lualine_b = { 'branch', 'diff', 'diagnostics' },
-    lualine_c = {
-      {
-        "filename",
-        path = 1, -- relative path
-      },
-    },
+
+    lualine_c = {},
+
     lualine_x = { 'fileformat', 'filetype' },
     lualine_y = { 'progress' },
+
     lualine_z = {
+      function()
+        local path = vim.fn.expand("%:.:h")
+        return path ~= "" and path or "[No Name]"
+      end,
       function()
         return os.date("%H:%M")
       end,

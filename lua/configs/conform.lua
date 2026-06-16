@@ -8,7 +8,9 @@ local options = {
     typescript = { "prettier" },
     typescriptreact = { "prettier" },
     json = { "prettier" },
+    templ = { "templ" },
     go = { "gofumpt", "goimports" },
+    toml = { "taplo" }
   },
   linters_by_ft = {
     go = { "golangci-lint" },

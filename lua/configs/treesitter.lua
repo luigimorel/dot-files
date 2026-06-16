@@ -4,6 +4,9 @@ require("nvim-treesitter.configs").setup({
     "css",
     "javascript",
     "tsx",
+    "markdown",
+    "markdown_inline",
+    "go", "gomod", "gosum", "gowork"
   },
 
   highlight = {

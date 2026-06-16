@@ -5,6 +5,12 @@ return {
     opts = require "configs.conform",
   },
   {
+    "HampusHauffman/block.nvim",
+    config = function()
+      require("block").setup({})
+    end
+  },
+  {
     "github/copilot.vim",
     event = "InsertEnter",
     config = function()
@@ -165,11 +171,13 @@ return {
   {
     "nvim-tree/nvim-tree.lua",
     opts = {
+      filters = {
+        dotfiles = false
+      },
       diagnostics = {
         enable = true,
         show_on_dirs = true,
         show_on_open_dirs = true,
-
         icons = {
           hint = "",
           info = "",

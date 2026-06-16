@@ -1,0 +1,118 @@
+[user]
+	email = morelmiles@gmail.com
+	name = Luigi Morel
+	signingkey = E4C0E0170247C2C8E1FBAE1CF3E9DD9A8C7A1382
+
+[branch "main"]
+  remote = origin
+  ;pushRemote = random-branch-that-does-not-exist
+  merge = refs/heads/main
+
+[branch "master"]
+  remote = origin
+  pushRemote = random-branch-that-does-not-exist
+  merge = refs/heads/master
+
+[push]
+	default = current
+
+[core]
+	editor = nvim
+	excludesfile = ~/.gitignore_global
+	; pager = diff-so-fancy | less --tabs=4 -RFX
+	quotepath = false
+	commitGraph = true
+	autocrlf = input
+	safecrlf = false
+  pager = delta
+
+[alias]
+	prune = "fetch --prune"
+  authors = "!git shortlog -s | cut -c8-"
+	; bclean clears up all local branches leaving only the current active branch.
+	; Say you have 5 branches (including master), then you checkout the fiend branch.
+	; Running git bclean would delete the other 4 branches, leaving only the fiend branch.
+	; Run this with caution.
+  bclean = "!git branch | grep -v "main" | xargs git branch -D"
+	fiend = "!git branch fiend && git checkout fiend"
+	lg = log --color --graph --abbrev-commit\n           --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%C(bold blue)<%an>%Creset'
+	pu = !git push --set-upstream origin $(git branch --show-current)
+	lol = log --oneline --graph --decorate
+	sw = switch
+	cm = commit -s -m
+	co = checkout
+	a = add
+	p = push
+	last = log -1 HEAD
+	fo = fetch origin
+	rom = rebase origin/main
+	com = checkout main
+	swc = !git switch -c \"$@\"
+	rest = "restore --staged . "
+	res = "restore  . "
+	s = status
+	stash = git stash --include-untracked
+
+[color]
+	ui = true
+
+[color "diff-highlight"]
+	oldNormal = red bold
+	oldHighlight = red bold 52
+	newNormal = green bold
+	newHighlight = green bold 22
+
+[color "diff"]
+	meta = 227
+	frag = magenta bold
+	commit = 227 bold
+	old = red bold
+	new = green bold
+	whitespace = red reverse
+
+[commit]
+	gpgsign = true
+
+[tag]
+	forceSignAnnotated = true
+
+[url "git@github.com:"]
+	insteadOf = https://github.com/
+	insteadOf = https://github.com/
+
+[gc]
+	writeCommitGraph = true
+
+[http]
+	cookiefile = /Users/morelmiles/.gitcookies
+
+[receive]
+	advertisePushOptions = true
+
+[gpg]
+	program = gpg
+
+[init]
+	defaultBranch = main
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+    navigate = true    
+
+[merge]
+    conflictstyle = diff3
+
+[diff]
+    colorMoved = default
+[rerere]
+	enabled = true
+[safe]
+	directory = /workdir
+	directory = /workdir
+	directory = /workdir
+	directory = /workdir
+	directory = /workdir
+[credential]
+	helper = store

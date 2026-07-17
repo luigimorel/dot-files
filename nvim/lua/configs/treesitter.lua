@@ -6,7 +6,11 @@ require("nvim-treesitter.configs").setup({
     "tsx",
     "markdown",
     "markdown_inline",
-    "go", "gomod", "gosum", "gowork"
+    "go",
+    "gomod",
+    "gosum",
+    "gowork",
+    "gotmpl"
   },
 
   highlight = {

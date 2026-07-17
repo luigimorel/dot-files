@@ -14,5 +14,23 @@ local servers = {
   "dockerls",
   "svelte",
 }
+
+-- Configure vtsls before enabling
+vim.lsp.config("vtsls", {
+  settings = {
+    typescript = {
+      preferences = { includePackageJsonAutoImports = "auto" },
+    },
+    javascript = {
+      preferences = { includePackageJsonAutoImports = "auto" },
+    },
+    vtsls = {
+      enableMoveToFileCodeAction = true,
+      autoUseWorkspaceTsdk = true,
+    },
+  },
+})
+
+
 vim.lsp.enable(servers)
 -- read :h vim.lsp.config for changing options of lsp servers

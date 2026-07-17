@@ -1,39 +1,268 @@
-{
-  "LuaSnip": { "branch": "master", "commit": "dae4f5aaa3574bd0c2b9dd20fb9542a02c10471c" },
-  "NvChad": { "branch": "v2.5", "commit": "f437558f23c8f50c36cd09748121ab2c822e8ec9" },
-  "base46": { "branch": "v3.0", "commit": "884b990dcdbe07520a0892da6ba3e8d202b46337" },
-  "block.nvim": { "branch": "main", "commit": "6fb969ab12579e58b9379aa51933cad4a466cf75" },
-  "cmp-async-path": { "branch": "main", "commit": "f8af3f726e07f2e9d37672eaa9102581aefce149" },
-  "cmp-buffer": { "branch": "main", "commit": "b74fab3656eea9de20a9b8116afa3cfc4ec09657" },
-  "cmp-nvim-lsp": { "branch": "main", "commit": "cbc7b02bb99fae35cb42f514762b89b5126651ef" },
-  "cmp-nvim-lua": { "branch": "main", "commit": "e3a22cb071eb9d6508a156306b102c45cd2d573d" },
-  "cmp_luasnip": { "branch": "master", "commit": "98d9cb5c2c38532bd9bdb481067b20fea8f32e90" },
-  "conform.nvim": { "branch": "master", "commit": "c2526f1cde528a66e086ab1668e996d162c75f4f" },
-  "copilot.vim": { "branch": "release", "commit": "a12fd5672110c8aa7e3c8419e28c96943ca179be" },
-  "dart-vim-plugin": { "branch": "master", "commit": "db2ef169d6ae08e2bdb7ca44aac3ebb3367c9802" },
-  "dressing.nvim": { "branch": "master", "commit": "2d7c2db2507fa3c4956142ee607431ddb2828639" },
-  "emmet-vim": { "branch": "master", "commit": "e98397144982d1e75b20d94d55a82de3ec8f648d" },
-  "flutter-tools.nvim": { "branch": "main", "commit": "677cc07c16e8b89999108d2ebeefcfc5f539b73c" },
-  "friendly-snippets": { "branch": "main", "commit": "6cd7280adead7f586db6fccbd15d2cac7e2188b9" },
-  "gitsigns.nvim": { "branch": "main", "commit": "9f3c6dd7868bcc116e9c1c1929ce063b978fa519" },
-  "indent-blankline.nvim": { "branch": "master", "commit": "d28a3f70721c79e3c5f6693057ae929f3d9c0a03" },
-  "lazy.nvim": { "branch": "main", "commit": "306a05526ada86a7b30af95c5cc81ffba93fef97" },
-  "mason.nvim": { "branch": "main", "commit": "44d1e90e1f66e077268191e3ee9d2ac97cc18e65" },
-  "menu": { "branch": "main", "commit": "7a0a4a2896b715c066cfbe320bdc048091874cc6" },
-  "minty": { "branch": "main", "commit": "aafc9e8e0afe6bf57580858a2849578d8d8db9e0" },
-  "nvim-autopairs": { "branch": "master", "commit": "59bce2eef357189c3305e25bc6dd2d138c1683f5" },
-  "nvim-cmp": { "branch": "main", "commit": "da88697d7f45d16852c6b2769dc52387d1ddc45f" },
-  "nvim-hlslens": { "branch": "main", "commit": "be2d7b2be01860b5445a007ff2bc72b29896db6b" },
-  "nvim-lspconfig": { "branch": "master", "commit": "44acfe887d4056f704ccc4f17513ed41c9e2b2e6" },
-  "nvim-scrollbar": { "branch": "main", "commit": "f8e87b96cd6362ef8579be456afee3b38fd7e2a8" },
-  "nvim-tree.lua": { "branch": "master", "commit": "e11ce83ed9a00f065bf676ae4e6c261c766989ba" },
-  "nvim-treesitter": { "branch": "master", "commit": "42fc28ba918343ebfd5565147a42a26580579482" },
-  "nvim-ts-autotag": { "branch": "main", "commit": "8e1c0a389f20bf7f5b0dd0e00306c1247bda2595" },
-  "nvim-web-devicons": { "branch": "master", "commit": "746ffbb17975ebd6c40142362eee1b0249969c5c" },
-  "plenary.nvim": { "branch": "master", "commit": "b9fd5226c2f76c951fc8ed5923d85e4de065e509" },
-  "telescope.nvim": { "branch": "master", "commit": "5255aa27c422de944791318024167ad5d40aad20" },
-  "ui": { "branch": "v3.0", "commit": "cb75908a86720172594b30de147272c1b3a7f452" },
-  "vim-wakatime": { "branch": "master", "commit": "d7973b157a632d1edeff01818f18d67e584eeaff" },
-  "volt": { "branch": "main", "commit": "620de1321f275ec9d80028c68d1b88b409c0c8b1" },
-  "which-key.nvim": { "branch": "main", "commit": "3aab2147e74890957785941f0c1ad87d0a44c15a" }
-}
+vim.g.base46_cache = vim.fn.stdpath "data" .. "/base46/"
+vim.g.mapleader = " "
+vim.o.shell = "/usr/bin/fish"
+vim.o.shellcmdflag = "-c"
+
+-- Telescope: Live Grep
+vim.keymap.set("n", "<leader>e", "<cmd>Telescope live_grep<CR>", {
+    desc = "Live Grep"
+})
+
+-- Yank entire file to system clipboard
+vim.keymap.set("n", "<C-y>", "<cmd>%y+<CR>", {
+    desc = "Yank entire file"
+})
+
+vim.keymap.set("i", "<C-a>", 'copilot#Accept("")', {
+    expr = true,
+    silent = true,
+    replace_keycodes = false,
+    noremap = true
+})
+
+-- bootstrap lazy and all plugins
+local lazypath = vim.fn.stdpath "data" .. "/lazy/lazy.nvim"
+
+if not vim.uv.fs_stat(lazypath) then
+    local repo = "https://github.com/folke/lazy.nvim.git"
+    vim.fn.system {"git", "clone", "--filter=blob:none", repo, "--branch=stable", lazypath}
+end
+
+vim.opt.rtp:prepend(lazypath)
+
+--  Open current file directory in nvim-tree
+vim.api.nvim_create_autocmd("VimEnter", {
+    callback = function()
+        local args = vim.fn.argv()
+        local arg = args[1] -- FIRST CLI argument
+
+        if not arg or arg == "" then
+            return
+        end
+
+        if vim.fn.isdirectory(arg) == 1 then
+            require("nvim-tree.api").tree.open()
+        end
+    end
+})
+
+vim.keymap.set("n", "<leader>r", function()
+    require("persistence").load()
+end, {
+    desc = "Restore Session"
+})
+
+vim.keymap.set("n", "<leader>ql", function()
+    require("persistence").load({
+        last = true
+    })
+end, {
+    desc = "Restore Last Session"
+})
+
+vim.keymap.set("n", "<leader>qd", function()
+    require("persistence").stop()
+end, {
+    desc = "Don't Save Current Session"
+})
+
+-- For file searching
+vim.keymap.set("n", "<leader>f", function()
+    require("telescope.builtin").find_files()
+end)
+
+vim.keymap.set("n", "<leader>z", function()
+    require("telescope.builtin").buffers()
+end)
+
+-- Handle closing tags in TS/JSX files
+vim.diagnostic.config({
+    underline = true,
+    virtual_text = {
+        spacing = 5,
+        severity = {
+            min = vim.diagnostic.severity.WARN
+        }
+    },
+    update_in_insert = true
+})
+
+-- Restore cursor position when reopening files
+vim.api.nvim_create_autocmd("BufReadPost", {
+    callback = function()
+        local mark = vim.api.nvim_buf_get_mark(0, '"')
+        local lcount = vim.api.nvim_buf_line_count(0)
+        if mark[1] > 0 and mark[1] <= lcount then
+            pcall(vim.api.nvim_win_set_cursor, 0, mark)
+
+            -- defer centering slightly so it's applied after render
+            vim.schedule(function()
+                vim.cmd("normal! zz")
+            end)
+        end
+    end
+})
+
+-- Git blame always enabled for git commit messages
+-- Show git blame info for the current line (no plugins)
+vim.api.nvim_create_autocmd("CursorHold", {
+    pattern = "*",
+    callback = function()
+        local file = vim.fn.expand("%:p")
+        if vim.fn.filereadable(file) == 0 then
+            return
+        end
+
+        local line = vim.fn.line(".")
+        local cmd = string.format("git blame -L %d,%d --porcelain -- %s | head -n 1", line, line,
+            vim.fn.shellescape(file))
+        local blame = vim.fn.system(cmd)
+
+        if vim.v.shell_error ~= 0 or blame == "" then
+            vim.api.nvim_echo({{"Not committed yet", "Comment"}}, false, {})
+            return
+        end
+
+        local commit = blame:match("^([0-9a-fA-F]+)")
+        if blame:match("^fatal:") then
+            return
+        end
+
+        local ns_id = vim.api.nvim_create_namespace("inline_git_blame")
+
+        if not commit or commit == "0000000000000000000000000000000000000000" then
+            vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
+                virt_text = {{"  Uncommitted", "WarningMsg"}},
+                virt_text_pos = "eol"
+            })
+            return
+        end
+
+        local info = vim.fn.system(string.format("git show -s --format='%%an, %%ar, %%s' %s", commit))
+        info = info:gsub("\n", "")
+        vim.api.nvim_echo({{info, "Comment"}}, false, {})
+    end
+})
+
+-- Inline git blame for the current line (no plugins)
+local ns_id = vim.api.nvim_create_namespace("inline_git_blame")
+
+local function show_blame()
+    vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
+    local file = vim.fn.expand("%:p")
+    if vim.fn.filereadable(file) == 0 then
+        return
+    end
+
+    local line = vim.fn.line(".")
+    local cmd = string.format("git blame -L %d,%d --porcelain -- %s | head -n 1", line, line, vim.fn.shellescape(file))
+    local blame = vim.fn.system(cmd)
+
+    -- If not committed yet (untracked or staged file)
+    if vim.v.shell_error ~= 0 or blame == "" then
+        vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
+            virt_text = {{"  Uncommitted", "WarningMsg"}},
+            virt_text_pos = "eol"
+        })
+        return
+    end
+
+    local commit = blame:match("^([0-9a-fA-F]+)")
+    if blame:match("^fatal:") then
+        return
+    end
+
+    if not commit or commit == "0000000000000000000000000000000000000000" then
+        vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
+            virt_text = {{"  Uncommitted", "WarningMsg"}},
+            virt_text_pos = "eol"
+        })
+        return
+    end
+
+    -- Get commit details
+    local info = vim.fn.system(string.format("git show -s --format='%%an • %%ar • %%s' %s", commit))
+    info = info:gsub("\n", "")
+    if info == "" then
+        vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
+            virt_text = {{"  Uncommitted", "WarningMsg"}},
+            virt_text_pos = "eol"
+        })
+        return
+    end
+
+    -- Show inline blame
+    vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
+        virt_text = {{"  " .. info, "Comment"}},
+        virt_text_pos = "eol"
+    })
+end
+
+-- Auto-update blame when cursor stops
+vim.api.nvim_create_autocmd({"CursorHold", "BufEnter"}, {
+    pattern = "*",
+    callback = show_blame
+})
+
+-- Clear when moving cursor
+vim.api.nvim_create_autocmd("CursorMoved", {
+    pattern = "*",
+    callback = function()
+        vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
+    end
+})
+
+-- Optional: reduce CursorHold delay
+vim.o.updatetime = 800
+
+-- Syntax highlighting for .env files
+vim.api.nvim_create_autocmd("BufRead", {
+    group = vim.api.nvim_create_augroup("env_syntax", {
+        clear = true
+    }),
+    pattern = ".env*",
+    callback = function()
+        vim.bo.filetype = "dosini"
+    end
+})
+
+-- Highlight yanked text
+vim.api.nvim_create_autocmd("TextYankPost", {
+    group = vim.api.nvim_create_augroup("highlight_yank", {
+        clear = true
+    }),
+    pattern = "*",
+    desc = "Highlight yanked text",
+    callback = function()
+        vim.highlight.on_yank {
+            timeout = 200,
+            visual = true,
+            higroup = "IncSearch"
+        }
+    end
+})
+
+vim.opt.textwidth = 120
+
+local lazy_config = require "configs.lazy"
+
+-- load plugins
+require("lazy").setup({{
+    "NvChad/NvChad",
+    lazy = false,
+    branch = "v2.5",
+    import = "nvchad.plugins"
+}, {
+    import = "plugins"
+}}, lazy_config)
+
+-- load theme
+dofile(vim.g.base46_cache .. "defaults")
+dofile(vim.g.base46_cache .. "statusline")
+
+require "options"
+require "autocmds"
+
+vim.schedule(function()
+    require "mappings"
+end)

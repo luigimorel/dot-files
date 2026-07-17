@@ -1,0 +1,16 @@
+.idea/
+.phpcd/
+tags
+.vscode/
+node_modules/
+vendor/
+venv/
+__pycache__/
+.env
+oops.md
+.zig-cache/
+zig-out/
+storage/
+.infisical.json
+docker-data/
+tmp

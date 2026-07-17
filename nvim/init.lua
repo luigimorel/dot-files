@@ -3,213 +3,230 @@ vim.g.mapleader = " "
 vim.o.shell = "/usr/bin/fish"
 vim.o.shellcmdflag = "-c"
 
--- Telescope: Live Grep
-vim.keymap.set("n", "<leader>e", "<cmd>Telescope live_grep<CR>", {
-    desc = "Live Grep"
-})
-
 -- Yank entire file to system clipboard
 vim.keymap.set("n", "<C-y>", "<cmd>%y+<CR>", {
-    desc = "Yank entire file"
+  desc = "Yank entire file"
 })
 
+-- Select/Highlight entire file contents
+vim.keymap.set("n", "<C-a>", "ggVG", {
+  desc = "Highlight entire file"
+})
+
+
+-- 1. Unmap any existing <C-e> mapping in normal mode to prevent conflicts
+pcall(vim.keymap.del, "n", "<C-e>")
+
+-- 2. Force register your custom Telescope search
+vim.keymap.set("n", "<C-e>", function()
+  require("telescope.builtin").live_grep({
+    default_text = vim.fn.expand("<cword>")
+  })
+end, {
+  desc = "Live grep word under cursor",
+  noremap = true,
+  silent = true,
+  nowait = true,
+})
+
+-- Accept copilot suggestions
 vim.keymap.set("i", "<C-a>", 'copilot#Accept("")', {
-    expr = true,
-    silent = true,
-    replace_keycodes = false,
-    noremap = true
+  expr = true,
+  silent = true,
+  replace_keycodes = false,
+  noremap = true
 })
 
 -- bootstrap lazy and all plugins
 local lazypath = vim.fn.stdpath "data" .. "/lazy/lazy.nvim"
 
 if not vim.uv.fs_stat(lazypath) then
-    local repo = "https://github.com/folke/lazy.nvim.git"
-    vim.fn.system {"git", "clone", "--filter=blob:none", repo, "--branch=stable", lazypath}
+  local repo = "https://github.com/folke/lazy.nvim.git"
+  vim.fn.system { "git", "clone", "--filter=blob:none", repo, "--branch=stable", lazypath }
 end
 
 vim.opt.rtp:prepend(lazypath)
 
 --  Open current file directory in nvim-tree
 vim.api.nvim_create_autocmd("VimEnter", {
-    callback = function()
-        local args = vim.fn.argv()
-        local arg = args[1] -- FIRST CLI argument
+  callback = function()
+    local args = vim.fn.argv()
+    local arg = args[1] -- FIRST CLI argument
 
-        if not arg or arg == "" then
-            return
-        end
-
-        if vim.fn.isdirectory(arg) == 1 then
-            require("nvim-tree.api").tree.open()
-        end
+    if not arg or arg == "" then
+      return
     end
+
+    if vim.fn.isdirectory(arg) == 1 then
+      require("nvim-tree.api").tree.open()
+    end
+  end
 })
 
 vim.keymap.set("n", "<leader>r", function()
-    require("persistence").load()
+  require("persistence").load()
 end, {
-    desc = "Restore Session"
+  desc = "Restore Session"
 })
 
 vim.keymap.set("n", "<leader>ql", function()
-    require("persistence").load({
-        last = true
-    })
+  require("persistence").load({
+    last = true
+  })
 end, {
-    desc = "Restore Last Session"
+  desc = "Restore Last Session"
 })
 
 vim.keymap.set("n", "<leader>qd", function()
-    require("persistence").stop()
+  require("persistence").stop()
 end, {
-    desc = "Don't Save Current Session"
+  desc = "Don't Save Current Session"
 })
 
 -- For file searching
 vim.keymap.set("n", "<leader>f", function()
-    require("telescope.builtin").find_files()
+  require("telescope.builtin").find_files()
 end)
 
 vim.keymap.set("n", "<leader>z", function()
-    require("telescope.builtin").buffers()
+  require("telescope.builtin").buffers()
 end)
 
 -- Handle closing tags in TS/JSX files
 vim.diagnostic.config({
-    underline = true,
-    virtual_text = {
-        spacing = 5,
-        severity = {
-            min = vim.diagnostic.severity.WARN
-        }
-    },
-    update_in_insert = true
+  underline = true,
+  virtual_text = {
+    spacing = 5,
+    severity = {
+      min = vim.diagnostic.severity.WARN
+    }
+  },
+  update_in_insert = true
 })
 
 -- Restore cursor position when reopening files
 vim.api.nvim_create_autocmd("BufReadPost", {
-    callback = function()
-        local mark = vim.api.nvim_buf_get_mark(0, '"')
-        local lcount = vim.api.nvim_buf_line_count(0)
-        if mark[1] > 0 and mark[1] <= lcount then
-            pcall(vim.api.nvim_win_set_cursor, 0, mark)
+  callback = function()
+    local mark = vim.api.nvim_buf_get_mark(0, '"')
+    local lcount = vim.api.nvim_buf_line_count(0)
+    if mark[1] > 0 and mark[1] <= lcount then
+      pcall(vim.api.nvim_win_set_cursor, 0, mark)
 
-            -- defer centering slightly so it's applied after render
-            vim.schedule(function()
-                vim.cmd("normal! zz")
-            end)
-        end
+      -- defer centering slightly so it's applied after render
+      vim.schedule(function()
+        vim.cmd("normal! zz")
+      end)
     end
+  end
 })
 
 -- Git blame always enabled for git commit messages
 -- Show git blame info for the current line (no plugins)
 vim.api.nvim_create_autocmd("CursorHold", {
-    pattern = "*",
-    callback = function()
-        local file = vim.fn.expand("%:p")
-        if vim.fn.filereadable(file) == 0 then
-            return
-        end
-
-        local line = vim.fn.line(".")
-        local cmd = string.format("git blame -L %d,%d --porcelain -- %s | head -n 1", line, line,
-            vim.fn.shellescape(file))
-        local blame = vim.fn.system(cmd)
-
-        if vim.v.shell_error ~= 0 or blame == "" then
-            vim.api.nvim_echo({{"Not committed yet", "Comment"}}, false, {})
-            return
-        end
-
-        local commit = blame:match("^([0-9a-fA-F]+)")
-        if blame:match("^fatal:") then
-            return
-        end
-
-        local ns_id = vim.api.nvim_create_namespace("inline_git_blame")
-
-        if not commit or commit == "0000000000000000000000000000000000000000" then
-            vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
-                virt_text = {{"  Uncommitted", "WarningMsg"}},
-                virt_text_pos = "eol"
-            })
-            return
-        end
-
-        local info = vim.fn.system(string.format("git show -s --format='%%an, %%ar, %%s' %s", commit))
-        info = info:gsub("\n", "")
-        vim.api.nvim_echo({{info, "Comment"}}, false, {})
+  pattern = "*",
+  callback = function()
+    local file = vim.fn.expand("%:p")
+    if vim.fn.filereadable(file) == 0 then
+      return
     end
+
+    local line = vim.fn.line(".")
+    local cmd = string.format("git blame -L %d,%d --porcelain -- %s | head -n 1", line, line,
+      vim.fn.shellescape(file))
+    local blame = vim.fn.system(cmd)
+
+    if vim.v.shell_error ~= 0 or blame == "" then
+      vim.api.nvim_echo({ { "Not committed yet", "Comment" } }, false, {})
+      return
+    end
+
+    local commit = blame:match("^([0-9a-fA-F]+)")
+    if blame:match("^fatal:") then
+      return
+    end
+
+    local ns_id = vim.api.nvim_create_namespace("inline_git_blame")
+
+    if not commit or commit == "0000000000000000000000000000000000000000" then
+      vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
+        virt_text = { { "  Uncommitted", "WarningMsg" } },
+        virt_text_pos = "eol"
+      })
+      return
+    end
+
+    local info = vim.fn.system(string.format("git show -s --format='%%an, %%ar, %%s' %s", commit))
+    info = info:gsub("\n", "")
+    vim.api.nvim_echo({ { info, "Comment" } }, false, {})
+  end
 })
 
 -- Inline git blame for the current line (no plugins)
 local ns_id = vim.api.nvim_create_namespace("inline_git_blame")
 
 local function show_blame()
-    vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
-    local file = vim.fn.expand("%:p")
-    if vim.fn.filereadable(file) == 0 then
-        return
-    end
+  vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
+  local file = vim.fn.expand("%:p")
+  if vim.fn.filereadable(file) == 0 then
+    return
+  end
 
-    local line = vim.fn.line(".")
-    local cmd = string.format("git blame -L %d,%d --porcelain -- %s | head -n 1", line, line, vim.fn.shellescape(file))
-    local blame = vim.fn.system(cmd)
+  local line = vim.fn.line(".")
+  local cmd = string.format("git blame -L %d,%d --porcelain -- %s | head -n 1", line, line, vim.fn.shellescape(file))
+  local blame = vim.fn.system(cmd)
 
-    -- If not committed yet (untracked or staged file)
-    if vim.v.shell_error ~= 0 or blame == "" then
-        vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
-            virt_text = {{"  Uncommitted", "WarningMsg"}},
-            virt_text_pos = "eol"
-        })
-        return
-    end
-
-    local commit = blame:match("^([0-9a-fA-F]+)")
-    if blame:match("^fatal:") then
-        return
-    end
-
-    if not commit or commit == "0000000000000000000000000000000000000000" then
-        vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
-            virt_text = {{"  Uncommitted", "WarningMsg"}},
-            virt_text_pos = "eol"
-        })
-        return
-    end
-
-    -- Get commit details
-    local info = vim.fn.system(string.format("git show -s --format='%%an • %%ar • %%s' %s", commit))
-    info = info:gsub("\n", "")
-    if info == "" then
-        vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
-            virt_text = {{"  Uncommitted", "WarningMsg"}},
-            virt_text_pos = "eol"
-        })
-        return
-    end
-
-    -- Show inline blame
+  -- If not committed yet (untracked or staged file)
+  if vim.v.shell_error ~= 0 or blame == "" then
     vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
-        virt_text = {{"  " .. info, "Comment"}},
-        virt_text_pos = "eol"
+      virt_text = { { "  Uncommitted", "WarningMsg" } },
+      virt_text_pos = "eol"
     })
+    return
+  end
+
+  local commit = blame:match("^([0-9a-fA-F]+)")
+  if blame:match("^fatal:") then
+    return
+  end
+
+  if not commit or commit == "0000000000000000000000000000000000000000" then
+    vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
+      virt_text = { { "  Uncommitted", "WarningMsg" } },
+      virt_text_pos = "eol"
+    })
+    return
+  end
+
+  -- Get commit details
+  local info = vim.fn.system(string.format("git show -s --format='%%an • %%ar • %%s' %s", commit))
+  info = info:gsub("\n", "")
+  if info == "" then
+    vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
+      virt_text = { { "  Uncommitted", "WarningMsg" } },
+      virt_text_pos = "eol"
+    })
+    return
+  end
+
+  -- Show inline blame
+  vim.api.nvim_buf_set_extmark(0, ns_id, line - 1, -1, {
+    virt_text = { { "  " .. info, "Comment" } },
+    virt_text_pos = "eol"
+  })
 end
 
 -- Auto-update blame when cursor stops
-vim.api.nvim_create_autocmd({"CursorHold", "BufEnter"}, {
-    pattern = "*",
-    callback = show_blame
+vim.api.nvim_create_autocmd({ "CursorHold", "BufEnter" }, {
+  pattern = "*",
+  callback = show_blame
 })
 
 -- Clear when moving cursor
 vim.api.nvim_create_autocmd("CursorMoved", {
-    pattern = "*",
-    callback = function()
-        vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
-    end
+  pattern = "*",
+  callback = function()
+    vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
+  end
 })
 
 -- Optional: reduce CursorHold delay
@@ -217,29 +234,29 @@ vim.o.updatetime = 800
 
 -- Syntax highlighting for .env files
 vim.api.nvim_create_autocmd("BufRead", {
-    group = vim.api.nvim_create_augroup("env_syntax", {
-        clear = true
-    }),
-    pattern = ".env*",
-    callback = function()
-        vim.bo.filetype = "dosini"
-    end
+  group = vim.api.nvim_create_augroup("env_syntax", {
+    clear = true
+  }),
+  pattern = ".env*",
+  callback = function()
+    vim.bo.filetype = "dosini"
+  end
 })
 
 -- Highlight yanked text
 vim.api.nvim_create_autocmd("TextYankPost", {
-    group = vim.api.nvim_create_augroup("highlight_yank", {
-        clear = true
-    }),
-    pattern = "*",
-    desc = "Highlight yanked text",
-    callback = function()
-        vim.highlight.on_yank {
-            timeout = 200,
-            visual = true,
-            higroup = "IncSearch"
-        }
-    end
+  group = vim.api.nvim_create_augroup("highlight_yank", {
+    clear = true
+  }),
+  pattern = "*",
+  desc = "Highlight yanked text",
+  callback = function()
+    vim.highlight.on_yank {
+      timeout = 200,
+      visual = true,
+      higroup = "IncSearch"
+    }
+  end
 })
 
 vim.opt.textwidth = 120
@@ -247,14 +264,14 @@ vim.opt.textwidth = 120
 local lazy_config = require "configs.lazy"
 
 -- load plugins
-require("lazy").setup({{
-    "NvChad/NvChad",
-    lazy = false,
-    branch = "v2.5",
-    import = "nvchad.plugins"
+require("lazy").setup({ {
+  "NvChad/NvChad",
+  lazy = false,
+  branch = "v2.5",
+  import = "nvchad.plugins"
 }, {
-    import = "plugins"
-}}, lazy_config)
+  import = "plugins"
+} }, lazy_config)
 
 -- load theme
 dofile(vim.g.base46_cache .. "defaults")
@@ -264,5 +281,5 @@ require "options"
 require "autocmds"
 
 vim.schedule(function()
-    require "mappings"
+  require "mappings"
 end)

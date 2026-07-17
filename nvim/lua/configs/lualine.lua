@@ -48,10 +48,23 @@ local M = {
     lualine_b = { 'branch', 'diff', 'diagnostics' },
 
     lualine_c = {
-      -- Center clock
       {
         function()
-          return " " .. os.date("%H:%M")
+          local fname = vim.fn.expand("%:t")
+          if fname == "" then
+            fname = "[No Name]"
+          end
+
+          if vim.bo.modified then
+            fname = fname .. " ●"
+          end
+
+          if vim.bo.readonly or not vim.bo.modifiable then
+            fname = fname .. " "
+          end
+
+          local time = os.date("%H:%M")
+          return string.format("%s    %s", fname, time)
         end,
         color = { fg = colors.blue, gui = "bold" },
       }

@@ -29,6 +29,9 @@ end, {
   nowait = true,
 })
 
+-- Delete the entire line
+vim.keymap.set("n", "m", "dd")
+
 -- Accept copilot suggestions
 vim.keymap.set("i", "<C-a>", 'copilot#Accept("")', {
   expr = true,
@@ -102,6 +105,15 @@ vim.diagnostic.config({
     }
   },
   update_in_insert = true
+})
+
+-- Find all function calls
+vim.keymap.set("n", "ga", function()
+  require("telescope.builtin").lsp_references()
+end, {
+  desc = "Find references",
+  noremap = true,
+  silent = true,
 })
 
 -- Restore cursor position when reopening files

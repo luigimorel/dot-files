@@ -28,6 +28,25 @@ vim.lsp.config("vtsls", {
       enableMoveToFileCodeAction = true,
       autoUseWorkspaceTsdk = true,
     },
+    vim.lsp.config("cssls", {
+      settings = {
+        css = {
+          lint = {
+            unknownAtRules = "ignore",
+          },
+        },
+        scss = {
+          lint = {
+            unknownAtRules = "ignore",
+          },
+        },
+        less = {
+          lint = {
+            unknownAtRules = "ignore",
+          },
+        },
+      },
+    })
   },
 })
 

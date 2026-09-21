@@ -66,18 +66,17 @@ vim.api.nvim_create_autocmd("VimEnter", {
   end
 })
 
--- Remove unused imports
-vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = { "*.ts", "*.tsx", "*.js", "*.jsx" },
-  callback = function()
-    vim.lsp.buf.code_action({
-      apply = true,
-      context = {
-        only = { "source.organizeImports" },
-        diagnostics = {},
-      },
-    })
-  end,
+-- Organize the imports
+vim.keymap.set("n", "<leader>oi", function()
+  vim.lsp.buf.code_action({
+    apply = true,
+    context = {
+      diagnostics = vim.diagnostic.get(0),
+      only = { "source.organizeImports" },
+    },
+  })
+end, {
+  desc = "Organize imports",
 })
 
 vim.keymap.set("n", "<leader>r", function()

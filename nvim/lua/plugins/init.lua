@@ -97,6 +97,17 @@ return {
   {
     "neovim/nvim-lspconfig",
     config = function()
+      -- Tailwind CSS LSP
+      vim.lsp.config("tailwindcss", {
+        settings = {
+          tailwindCSS = {
+            lint = {
+              suggestCanonicalClasses = "ignore",
+            },
+          },
+        },
+      })
+
       require("configs.lspconfig")
 
       -- === Go to definition keymaps ===
@@ -133,7 +144,6 @@ return {
       vim.api.nvim_create_autocmd("FileType", {
         pattern = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
         callback = function()
-          -- double left-click (or Ctrl-click if you prefer) opens definition
           vim.keymap.set("n", "<2-LeftMouse>", vim.lsp.buf.definition, {
             buffer = true,
             desc = "Click to go to definition",
@@ -142,7 +152,6 @@ return {
       })
     end,
   },
-
   -- Wakatime
   {
     "wakatime/vim-wakatime",
